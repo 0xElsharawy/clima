@@ -5,7 +5,7 @@ services:
     restart: no
     networks:
       - weather-net
-    user: "${AIRFLOW_UID:-50000}:0"
+    user: "${AIRFLOW_UID:-1000}:0"
     depends_on:
       postgres:
         condition: service_healthy
