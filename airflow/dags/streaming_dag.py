@@ -1,7 +1,17 @@
-from datetime import datetime, timedelta
+import json
+from datetime import datetime, timedelta, timezone
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
+from confluent_kafka import Producer
+from confluent_kafka.schema_registry import SchemaRegistryClient
+from confluent_kafka.schema_registry.avro import AvroSerializer
+from confluent_kafka.serialization import (
+    MessageField,
+    SerializationContext,
+    StringSerializer,
+)
 
 default_args = {"owner": "batman", "retries": 5, "retry_delay": timedelta(minutes=1)}
 
@@ -15,61 +25,68 @@ dag = DAG(
 )
 
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
+BUCKET_NAME = "weather-archive"
+TOPIC = "weather_raw"
 
 
-def upload_to_minio(ti):
-    import json
-    from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-
-    hook = S3Hook(aws_conn_id="minio_conn")
-
-    weather_data = ti.xcom_pull(task_ids="fetch_weather")
-    data_str = json.dumps(weather_data)
-
-    timestamp = weather_data["current"]["time"].replace(":", "-")
-    city = weather_data["city"]
-    object_key = f"landing/{city}/{timestamp}.json"
-
-    hook.load_string(
-        string_data=data_str,
-        key=object_key,
-        bucket_name="weather-archive",
-        replace=True,
-    )
-
-
-def fetch_weather(city):
+def fetch_weather_to_minio(city, **kwargs):
     import requests
 
-    params = {
-        "latitude": city["latitude"],
-        "longitude": city["longitude"],
-        "current": ["temperature_2m", "wind_speed_10m"],
-        "timezone": "auto",
-    }
-    response = requests.get(BASE_URL, params=params)
-    if response.status_code == 200:
-        weather_data = response.json()
-        weather_data["city"] = city["city"]
-        return weather_data
+    response = requests.get(
+        BASE_URL,
+        params={
+            "latitude": city["latitude"],
+            "longitude": city["longitude"],
+            "current": ["temperature_2m", "wind_speed_10m"],
+            "timezone": "auto",
+        },
+    )
+    response.raise_for_status()
+    data = response.json()
+    data["city"] = city["city"]
+
+    ts = data["current"]["time"].replace(":", "-")
+    key = f"landing/{city['city']}/{ts}.json"
+
+    hook = S3Hook(aws_conn_id="minio_conn")
+    hook.load_string(json.dumps(data), key=key, bucket_name=BUCKET_NAME, replace=True)
+
+    return key
+
+
+def delivery_report(err, msg):
+    if err:
+        print(f"❌ Delivery failed: {err}")
     else:
-        print(f"Error fetching weather data for {city['city']}: {response.status_code}")
-        return None
+        print(f"✅ Delivered to {msg.topic()} [Partition: {msg.partition()}]")
 
 
-def kafka_stream():
-    pass
+def weather_to_dict(weather_data, ctx):
+    return {"city": weather_data["city"]}
+
+
+def stream_to_kafka(ti):
+    object_key = ti.xcom_pull(task_ids="fetch_weather_to_minio")
+    hook = S3Hook(aws_conn_id="minio_conn")
+    data_str = hook.read_key(key=object_key, bucket_name=BUCKET_NAME)
+    weather_data = json.loads(data_str)
+
+    producer_conf = {
+        "bootstrap.servers": "kafka:29092",
+    }
+
+    producer = Producer(dict(producer_conf))
 
 
 with dag:
     task1 = PythonOperator(
-        task_id="fetch_weather",
-        python_callable=fetch_weather,
+        task_id="fetch_weather_to_minio",
+        python_callable=fetch_weather_to_minio,
         op_kwargs={
             "city": {"city": "Cairo", "latitude": 30.0444, "longitude": 31.2357}
         },
     )
 
-    task2 = PythonOperator(task_id="upload_to_minio", python_callable=upload_to_minio)
+    task2 = PythonOperator(task_id="stream_to_kafka", python_callable=stream_to_kafka)
 
     task1 >> task2
