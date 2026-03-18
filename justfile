@@ -4,7 +4,7 @@ default:
 
 # Start all services in the background
 up:
-    @@docker compose up -d
+    @docker compose up -d
 
 # Stop and remove containers, networks, and images
 down:
