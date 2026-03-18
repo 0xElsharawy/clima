@@ -29,3 +29,18 @@ shell service:
 # Check status of containers
 ps:
     @docker compose ps
+
+
+terraform_dir := "./terraform"
+
+# Initialize terraform
+init:
+    cd {{terraform_dir}} && terraform init
+
+# Apply terraform with auto-approve
+apply:
+    cd {{terraform_dir}} && terraform apply -auto-approve
+
+# Destroy terraform with auto-approve
+destroy:
+    cd {{terraform_dir}} && terraform destroy -auto-approve
