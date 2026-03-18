@@ -8,7 +8,7 @@ up:
 
 # Stop and remove containers, networks, and images
 down:
-    @@docker compose down
+    @docker compose down
 
 # Show logs for a specific service (usage: just logs airflow)
 logs service:
