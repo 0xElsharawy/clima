@@ -1,9 +1,6 @@
-import json
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-import requests
 
 
 default_args = {"owner": "batman", "retries": 5, "retry_delay": timedelta(minutes=1)}
@@ -20,13 +17,18 @@ dag = DAG(
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
 
 
-def upload_to_minio(api_data, city_name):
+def upload_to_minio(ti):
+    import json
+    from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+
     hook = S3Hook(aws_conn_id="minio_conn")
 
-    data_str = json.dumps(api_data)
+    weather_data = ti.xcom_pull(task_ids="fetch_weather")
+    data_str = json.dumps(weather_data)
 
-    timestamp = api_data["current"]["time"].replace(":", "-")
-    object_key = f"landing/{city_name}/{timestamp}.json"
+    timestamp = weather_data["current"]["time"].replace(":", "-")
+    city = weather_data["city"]
+    object_key = f"landing/{city}/{timestamp}.json"
 
     hook.load_string(
         string_data=data_str,
@@ -37,6 +39,8 @@ def upload_to_minio(api_data, city_name):
 
 
 def fetch_weather(city):
+    import requests
+
     params = {
         "latitude": city["latitude"],
         "longitude": city["longitude"],
@@ -46,7 +50,6 @@ def fetch_weather(city):
     response = requests.get(BASE_URL, params=params)
     if response.status_code == 200:
         weather_data = response.json()
-        upload_to_minio(weather_data, city["city"])
         weather_data["city"] = city["city"]
         return weather_data
     else:
@@ -59,12 +62,14 @@ def kafka_stream():
 
 
 with dag:
-    task = PythonOperator(
-        task_id="fetch_and_upload",
+    task1 = PythonOperator(
+        task_id="fetch_weather",
         python_callable=fetch_weather,
         op_kwargs={
             "city": {"city": "Cairo", "latitude": 30.0444, "longitude": 31.2357}
         },
     )
 
-    task
+    task2 = PythonOperator(task_id="upload_to_minio", python_callable=upload_to_minio)
+
+    task1 >> task2
