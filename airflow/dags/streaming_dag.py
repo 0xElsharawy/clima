@@ -1,4 +1,4 @@
-import json
+import json, os
 from datetime import datetime, timedelta, timezone
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
@@ -29,29 +29,47 @@ BUCKET_NAME = "weather-archive"
 TOPIC = "weather_raw"
 
 
-def fetch_weather_to_minio(city, **kwargs):
+def fetch_weather_to_minio(**kwargs):
     import requests
+    import os
 
-    response = requests.get(
-        BASE_URL,
-        params={
-            "latitude": city["latitude"],
-            "longitude": city["longitude"],
-            "current": ["temperature_2m", "wind_speed_10m"],
-            "timezone": "auto",
-        },
-    )
-    response.raise_for_status()
-    data = response.json()
-    data["city"] = city["city"]
+    ti = kwargs["ti"]
 
-    ts = data["current"]["time"].replace(":", "-")
-    key = f"landing/{city['city']}/{ts}.json"
+    BASE_DIR = os.path.dirname(__file__)
+    with open(os.path.join(BASE_DIR, "cities.json"), "r") as f:
+        cities = json.load(f)
 
     hook = S3Hook(aws_conn_id="minio_conn")
-    hook.load_string(json.dumps(data), key=key, bucket_name=BUCKET_NAME, replace=True)
+    keys = []
 
-    return key
+    for city in cities:
+        response = requests.get(
+            BASE_URL,
+            params={
+                "latitude": city["latitude"],
+                "longitude": city["longitude"],
+                "current": "temperature_2m,wind_speed_10m",
+                "timezone": "auto",
+            },
+        )
+
+        response.raise_for_status()
+        data = response.json()
+        data["city"] = city["city"]
+
+        ts = data["current"]["time"].replace(":", "-")
+        key = f"landing/{city['city']}/{ts}.json"
+
+        hook.load_string(
+            json.dumps(data),
+            key=key,
+            bucket_name=BUCKET_NAME,
+            replace=True,
+        )
+
+        keys.append(key)
+
+    return keys
 
 
 def delivery_report(err, msg):
@@ -62,20 +80,64 @@ def delivery_report(err, msg):
 
 
 def weather_to_dict(weather_data, ctx):
-    return {"city": weather_data["city"]}
+    return weather_data
 
 
 def stream_to_kafka(ti):
-    object_key = ti.xcom_pull(task_ids="fetch_weather_to_minio")
-    hook = S3Hook(aws_conn_id="minio_conn")
-    data_str = hook.read_key(key=object_key, bucket_name=BUCKET_NAME)
-    weather_data = json.loads(data_str)
-
     producer_conf = {
         "bootstrap.servers": "kafka:29092",
     }
 
-    producer = Producer(dict(producer_conf))
+    producer = Producer(producer_conf)
+
+    BASE_DIR = os.path.dirname(__file__)
+    with open(os.path.join(BASE_DIR, "weather_res.avsc"), "r") as f:
+        schema_str = f.read()
+
+    schema_registry_conf = {"url": "http://schema-registry:8081"}
+    schema_registry_client = SchemaRegistryClient(schema_registry_conf)
+
+    avro_serializer = AvroSerializer(
+        schema_registry_client,
+        schema_str,
+        weather_to_dict,
+    )
+
+    string_serializer = StringSerializer("utf-8")
+
+    object_keys = ti.xcom_pull(task_ids="fetch_weather_to_minio")
+
+    if not object_keys:
+        raise ValueError("No object keys received from previous task")
+
+    hook = S3Hook(aws_conn_id="minio_conn")
+
+    try:
+        for key in object_keys:
+            data_str = hook.read_key(key=key, bucket_name=BUCKET_NAME)
+            weather_data = json.loads(data_str)
+
+            if not weather_data:
+                continue
+
+            producer.produce(
+                topic=TOPIC,
+                key=string_serializer(
+                    weather_data["city"],
+                    SerializationContext(TOPIC, MessageField.KEY),
+                ),
+                value=avro_serializer(
+                    weather_data,
+                    SerializationContext(TOPIC, MessageField.VALUE),
+                ),
+                on_delivery=delivery_report,
+            )
+
+        producer.flush()
+
+    except Exception as e:
+        print(f"❌ Error in Kafka streaming: {e}")
+        raise
 
 
 with dag:
