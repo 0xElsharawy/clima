@@ -1,6 +1,7 @@
 include:
   - path: ./airflow/compose.yml
   - path: ./clickhouse/compose.yml
+  - path: ./flink/compose.yml
   - path: ./kafka/compose.yml
   - path: ./metabase/compose.yml
   - path: ./minio/compose.yml
