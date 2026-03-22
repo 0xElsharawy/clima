@@ -1,4 +1,6 @@
-import json, os
+import json
+import os
+
 from datetime import datetime, timedelta, timezone
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
@@ -26,7 +28,7 @@ dag = DAG(
 
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
 BUCKET_NAME = "weather-archive"
-TOPIC = "weather_raw"
+TOPIC = os.getenv("KAFKA_TOPIC")
 
 
 def fetch_weather_to_minio(**kwargs):
