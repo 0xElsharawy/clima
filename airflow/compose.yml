@@ -2,6 +2,8 @@ services:
   airflow:
     build: .
     container_name: weather-airflow
+    env_file:
+      - ../.env
     restart: no
     networks:
       - weather-net
@@ -16,6 +18,7 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW_CORE_ENABLE_XCOM_PICKLING: "true"
       _AIRFLOW_DB_MIGRATE: "true"
+      KAFKA_TOPIC: ${KAFKA_TOPIC:-weather_raw}
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
