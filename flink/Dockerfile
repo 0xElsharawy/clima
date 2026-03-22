@@ -14,21 +14,6 @@ ENV PATH="/opt/pyflink/.venv/bin:$PATH"
 # Flink libraries for connectors
 WORKDIR /opt/flink/lib
 
-# Download core connectors
-# RUN wget -O flink-sql-connector-kafka-4.0.1-2.0.jar \
-#     https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/4.0.1-2.0/flink-sql-connector-kafka-4.0.1-2.0.jar && \
-#     wget -O flink-connector-jdbc-core-4.0.0-2.0.jar \
-#     https://repo.maven.org/maven2/org/apache/flink/flink-connector-jdbc-core/4.0.0-2.0/flink-connector-jdbc-core-4.0.0-2.0.jar && \
-#     wget -O clickhouse-jdbc-all-0.9.7.jar \
-#     https://repo1.maven.org/maven2/com/clickhouse/clickhouse-jdbc-all/0.9.7/clickhouse-jdbc-all-0.9.7.jar && \
-#     wget -O kafka-schema-registry-client-7.7.7.jar \
-#     https://repo1.maven.org/maven2/io/confluent/kafka-schema-registry-client/7.7.7/kafka-schema-registry-client-7.7.7.jar && \
-#     wget -O kafka-avro-serializer-7.6.1.jar \
-#     https://repo1.maven.org/maven2/io/confluent/kafka-avro-serializer/7.6.1/kafka-avro-serializer-7.6.1.jar && \
-#     wget -O flink-avro-2.2.0.jar \
-#     https://repo1.maven.org/maven2/org/apache/flink/flink-avro/2.2.0/flink-avro-2.2.0.jar
-
-
 # Base URLs
 ARG MAVEN_REPO=https://repo.maven.apache.org/maven2
 ARG CONFLUENT_REPO=https://packages.confluent.io/maven
@@ -38,7 +23,6 @@ RUN wget -q ${MAVEN_REPO}/org/apache/flink/flink-sql-connector-kafka/4.0.1-2.0/f
     wget -q ${MAVEN_REPO}/com/clickhouse/clickhouse-jdbc-all/0.9.7/clickhouse-jdbc-all-0.9.7.jar && \
     wget -q ${MAVEN_REPO}/org/apache/avro/avro/1.11.2/avro-1.11.2.jar && \
     wget -q ${MAVEN_REPO}/org/apache/flink/flink-avro/2.2.0/flink-avro-2.2.0.jar && \
-    # Using Confluent's official repo for these specific versions
     wget -q ${CONFLUENT_REPO}/io/confluent/kafka-schema-registry-client/7.7.7/kafka-schema-registry-client-7.7.7.jar && \
     wget -q ${CONFLUENT_REPO}/io/confluent/kafka-avro-serializer/7.6.1/kafka-avro-serializer-7.6.1.jar
 
