@@ -1,7 +1,7 @@
 services:
   airflow:
     build: .
-    container_name: weather-airflow
+    container_name: airflow
     env_file:
       - ../.env
     restart: no
@@ -30,7 +30,7 @@ services:
 
   docker-proxy:
     image: tecnativa/docker-socket-proxy:v0.4.2
-    container_name: weather-docker-proxy
+    container_name: docker-proxy
     restart: no
     networks:
       - weather-net

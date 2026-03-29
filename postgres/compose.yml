@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: weather-postgres
+    container_name: postgres
     restart: no
     networks:
       - weather-net

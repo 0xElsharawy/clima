@@ -1,7 +1,7 @@
 services:
   minio:
     image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
-    container_name: weather-minio
+    container_name: minio
     restart: no
     networks:
       - weather-net
