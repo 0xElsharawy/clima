@@ -18,12 +18,8 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW_CORE_ENABLE_XCOM_PICKLING: "true"
       _AIRFLOW_DB_MIGRATE: "true"
-      KAFKA_TOPIC: ${KAFKA_TOPIC:-weather_raw}
     volumes:
       - ./dags:/opt/airflow/dags
-      - ./logs:/opt/airflow/logs
-      - ./plugins:/opt/airflow/plugins
-      - ./config:/opt/airflow/config
     ports:
       - "8080:8080"
     command: standalone
