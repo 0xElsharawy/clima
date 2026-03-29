@@ -10,6 +10,10 @@ up:
 down:
     @docker compose down
 
+# Stop and remove containers, networks, images, and volumes
+down-all:
+    @docker compose down -v --remove-orphans
+
 # Show logs for a specific service (usage: just logs airflow)
 logs service:
     @docker compose logs -f {{service}}
