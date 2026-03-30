@@ -1,6 +1,6 @@
 # Real-Time Weather Pipeline
 
-A real-time weather data pipeline that fetches weather data from Open-Meteo API, stores raw data in MinIO, streams through Kafka, and processes with Apache Flink into ClickHouse for analytics.
+A real-time weather data pipeline that fetches weather data from Open-Meteo API, stores raw data in MinIO, and streams through Kafka for downstream processing.
 
 ## Architecture
 
@@ -13,24 +13,18 @@ MinIO (raw data landing zone)
       ↓
 Apache Kafka (streaming)
       ↓
-Apache Flink (stream processing)
-      ↓
-ClickHouse (analytics database)
-      ↓
-Metabase (visualization)
+[Downstream consumers]
 ```
 
 ## Tech Stack
 
-| Component         | Technology                     |
-| ----------------- | ------------------------------ |
-| Orchestration     | Apache Airflow                 |
-| Message Broker    | Apache Kafka + Schema Registry |
-| Stream Processing | Apache Flink (PyFlink)         |
-| Object Storage    | MinIO (S3-compatible)          |
-| Analytics DB      | ClickHouse                     |
-| Visualization     | Metabase                       |
-| Infrastructure    | Terraform                      |
+| Component      | Technology                |
+| -------------- | ------------------------- |
+| Orchestration  | Apache Airflow            |
+| Message Broker | Apache Kafka              |
+| Object Storage | MinIO (S3-compatible)     |
+| Metadata DB    | PostgreSQL                |
+| Infrastructure | Terraform                 |
 
 ## Quick Start
 
@@ -66,10 +60,30 @@ just rebuild   # Rebuild and restart
 | ------------- | ---- | --------------------- |
 | Airflow       | 8080 | http://localhost:8080 |
 | Kafka UI      | 8083 | http://localhost:8083 |
-| Flink UI      | 8082 | http://localhost:8082 |
-| ClickHouse    | 8123 | http://localhost:8123 |
-| Metabase      | 3000 | http://localhost:3000 |
 | MinIO Console | 9001 | http://localhost:9001 |
+| PostgreSQL    | 5432 | localhost:5432        |
+
+### 🛠 MinIO Setup for Airflow
+
+To enable Airflow to communicate with your local MinIO instance, follow these steps:
+
+1.  Navigate to your Airflow web UI (typically `http://localhost:8080`).
+2.  In the top menu, go to **Admin** -> **Connections**.
+3.  Click the **+ (plus)** icon to add a new connection.
+4.  Fill in the following details:
+    - **Connection Id:** `minio_conn`
+    - **Connection Type:** `Amazon Web Services`
+    - **Extra Fields JSON:** copy and paste the following JSON configuration:
+
+    ```json
+    {
+      "aws_access_key_id": "mioadmin",
+      "aws_secret_access_key": "mioadmin",
+      "endpoint_url": "http://minio:9000"
+    }
+    ```
+
+    - **Save** the connection.
 
 ## Default Credentials
 
@@ -77,7 +91,7 @@ just rebuild   # Rebuild and restart
 | ---------- | -------- | ------------------- |
 | Airflow    | admin    | `just airflow-cred` |
 | MinIO      | mioadmin | mioadmin            |
-| ClickHouse | chadmin  | chadmin             |
+| PostgreSQL | airflow  | airflow             |
 
 ## Project Structure
 
@@ -86,10 +100,7 @@ just rebuild   # Rebuild and restart
 │   └── dags/
 │       ├── streaming_dag.py   # Main pipeline DAG
 │       └── cities.json        # 30 Spanish cities
-├── kafka/             # Kafka + Schema Registry
-├── flink/             # PyFlink jobs
-├── clickhouse/        # ClickHouse setup
-├── metabase/          # BI dashboards
+├── kafka/             # Kafka configuration
 ├── minio/             # Object storage
 ├── postgres/          # Metadata storage
 └── terraform/         # Infrastructure as code
@@ -99,9 +110,8 @@ just rebuild   # Rebuild and restart
 
 1. **Airflow DAG** fetches weather data from Open-Meteo API for configured cities
 2. Raw JSON is stored in **MinIO** (weather-archive bucket, landing/ prefix)
-3. Data is serialized with Avro schema and produced to **Kafka** (weather_raw topic)
-4. **Flink** consumes from Kafka, transforms, and writes to **ClickHouse**
-5. **Metabase** provides visualization dashboards
+3. Data is serialized and produced to **Kafka** (weather_raw topic)
+4. **Kafka** streams data for downstream consumers
 
 ## Terraform (MinIO)
 
@@ -122,5 +132,4 @@ cp .env.example .env
 Key variables:
 
 - `KAFKA_TOPIC` - Kafka topic name
-- `CLICKHOUSE_DB` - ClickHouse database name
 - `MINIO_BUCKET` - MinIO bucket name
