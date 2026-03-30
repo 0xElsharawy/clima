@@ -55,4 +55,4 @@ xcom:
 
 # Get airflow username & password
 airflow-cred:
-    @docker exec weather-airflow cat simple_auth_manager_passwords.json.generated
+    @docker exec airflow cat simple_auth_manager_passwords.json.generated
