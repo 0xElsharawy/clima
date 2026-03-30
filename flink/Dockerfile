@@ -15,9 +15,11 @@ WORKDIR /opt/flink/lib
 ARG MAVEN_REPO=https://repo.maven.apache.org/maven2
 
 RUN wget -q ${MAVEN_REPO}/org/apache/flink/flink-sql-connector-kafka/4.0.1-2.0/flink-sql-connector-kafka-4.0.1-2.0.jar
-RUN wget -q ${MAVEN_REPO}/com/clickhouse/flink/flink-connector-clickhouse-2.0.0/0.1.3/flink-connector-clickhouse-2.0.0-0.1.3-all.jar
-RUN wget -q ${MAVEN_REPO}/org/apache/flink/flink-avro/2.2.0/flink-avro-2.2.0.jar && \
-    wget -q ${MAVEN_REPO}/org/apache/flink/flink-avro-confluent-registry/2.2.0/flink-avro-confluent-registry-2.2.0.jar
+RUN wget -q ${MAVEN_REPO}/org/apache/flink/flink-connector-jdbc-core/4.0.0-2.0/flink-connector-jdbc-core-4.0.0-2.0.jar
+RUN wget -q ${MAVEN_REPO}/org/apache/flink/flink-avro-confluent-registry/2.2.0/flink-avro-confluent-registry-2.2.0.jar
+RUN wget -q ${MAVEN_REPO}/org/postgresql/postgresql/42.7.10/postgresql-42.7.10.jar
+RUN wget -q ${MAVEN_REPO}/org/apache/flink/flink-avro/2.2.0/flink-avro-2.2.0.jar
+RUN wget -q ${MAVEN_REPO}/org/apache/avro/avro/1.12.1/avro-1.12.1.jar
 
 # Copy custom Flink config
 COPY flink-config.yaml /opt/flink/conf/config.yaml
