@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta, timezone
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
+from airflow.providers.standard.operators.bash import BashOperator
 
 default_args = {"owner": "batman", "retries": 5, "retry_delay": timedelta(minutes=1)}
 
@@ -70,8 +71,13 @@ def ingest_csv():
 
 
 with dag:
-    task1 = PythonOperator(task_id="download_csv", python_callable=download_csv)
+    task1 = BashOperator(
+        task_id="cleanup_tmp",
+        bash_command="rm -rf /tmp/* /tmp/.[!.]* 2>/dev/null || true",
+    )
 
-    task2 = PythonOperator(task_id="ingest_csv", python_callable=ingest_csv)
+    task2 = PythonOperator(task_id="download_csv", python_callable=download_csv)
 
-    task1 >> task2
+    task3 = PythonOperator(task_id="ingest_csv", python_callable=ingest_csv)
+
+    task1 >> task2 >> task3
