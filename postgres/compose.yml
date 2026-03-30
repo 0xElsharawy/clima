@@ -12,7 +12,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./init-db:/docker-entrypoint-initdb.d
+      - ./init-db/weather-init.sql:/docker-entrypoint-initdb.d/weather-init.sql
+      - ./metadata-init/airflow-init.sql:/docker-entrypoint-initdb.d/airflow-init.sql
+      - ./metadata-init/metabase-init.sql:/docker-entrypoint-initdb.d/metabase-init.sql
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
