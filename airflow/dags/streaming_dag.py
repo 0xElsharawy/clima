@@ -1,6 +1,7 @@
 import json
 import os
-
+import requests
+import psycopg2
 from datetime import datetime, timedelta, timezone
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
@@ -14,6 +15,7 @@ from confluent_kafka.serialization import (
     SerializationContext,
     StringSerializer,
 )
+
 
 default_args = {"owner": "batman", "retries": 5, "retry_delay": timedelta(minutes=1)}
 
@@ -30,18 +32,32 @@ BASE_URL = "https://api.open-meteo.com/v1/forecast"
 BUCKET_NAME = "weather-archive"
 TOPIC = os.getenv("KAFKA_TOPIC")
 
+DB_CONFIG = {
+    "host": "postgres",
+    "port": 5432,
+    "database": "weather_db",
+    "user": "postgres",
+    "password": "password",
+}
+
 
 def fetch_weather_to_minio(**kwargs):
-    import requests
-    import os
-
     ti = kwargs["ti"]
 
-    BASE_DIR = os.path.dirname(__file__)
-    with open(os.path.join(BASE_DIR, "cities.json"), "r") as f:
-        cities = json.load(f)
+    conn = psycopg2.connect(**DB_CONFIG)
+    cur = conn.cursor()
+    cur.execute("SELECT city, lat, lng FROM cities;")
+    cities = [
+        {"city": row[0], "latitude": row[1], "longitude": row[2]}
+        for row in cur.fetchall()
+    ]
+    cur.close()
+    conn.close()
 
     hook = S3Hook(aws_conn_id="minio_conn")
+    if hook.check_for_bucket(bucket_name="weather-archive"):
+        print("Successfully connected to MinIO!")
+
     keys = []
 
     for city in cities:
@@ -50,7 +66,25 @@ def fetch_weather_to_minio(**kwargs):
             params={
                 "latitude": city["latitude"],
                 "longitude": city["longitude"],
-                "current": "temperature_2m,wind_speed_10m",
+                "current": ",".join(
+                    [
+                        "temperature_2m",
+                        "apparent_temperature",
+                        "relative_humidity_2m",
+                        "is_day",
+                        "precipitation",
+                        "rain",
+                        "showers",
+                        "snowfall",
+                        "weathercode",
+                        "cloud_cover",
+                        "pressure_msl",
+                        "surface_pressure",
+                        "wind_speed_10m",
+                        "wind_direction_10m",
+                        "wind_gusts_10m",
+                    ]
+                ),
                 "timezone": "auto",
             },
         )
