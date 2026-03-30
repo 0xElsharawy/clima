@@ -1,4 +1,4 @@
-CREATE TABLE weather_readings (
+CREATE TABLE IF NOT EXISTS weather_readings (
   id SERIAL PRIMARY KEY,
   city VARCHAR(255),
   latitude DOUBLE PRECISION,
@@ -8,7 +8,7 @@ CREATE TABLE weather_readings (
   timezone VARCHAR(100),
   timezone_abbreviation VARCHAR(50),
   elevation DOUBLE PRECISION,
-  cur_time TIMESTAMP,
+  event_time TIMESTAMP,
   interval_sec INTEGER,
   temperature_2m DOUBLE PRECISION,
   apparent_temperature DOUBLE PRECISION,
