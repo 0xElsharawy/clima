@@ -1,10 +1,12 @@
 services:
-  jobmanager:
+  flink-jobmanager:
     build:
       context: .
       dockerfile: Dockerfile
     image: weather-pyflink
-    container_name: weather-jobmanager
+    container_name: flink-jobmanager
+    env_file:
+      - ../.env
     networks:
       - weather-net
     restart: no
@@ -12,19 +14,20 @@ services:
     expose:
       - "6123"
     ports:
-      - "8082:8081"
+      - "8082:8081" # Web UI
     volumes:
       - ./:/opt/flink/usrlib
       - ./src/:/opt/src
     command: jobmanager
     environment:
+      KAFKA_TOPIC: ${KAFKA_TOPIC:-weather_raw}
       FLINK_PROPERTIES: |
         jobmanager.rpc.address:jobmanager
         jobmanager.memory.process.size: 1600m
 
-  taskmanager:
+  flink-taskmanager:
     image: weather-pyflink
-    container_name: weather-taskmanager
+    container_name: flink-taskmanager
     networks:
       - weather-net
     restart: no
@@ -33,7 +36,7 @@ services:
       - "6121"
       - "6122"
     depends_on:
-      - jobmanager
+      - flink-jobmanager
     command: ["taskmanager", "--taskmanager.registration.timeout", "300s"]
     environment:
       FLINK_PROPERTIES: |
