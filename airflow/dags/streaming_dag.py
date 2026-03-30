@@ -6,15 +6,7 @@ from datetime import datetime, timedelta, timezone
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-
 from confluent_kafka import Producer
-from confluent_kafka.schema_registry import SchemaRegistryClient
-from confluent_kafka.schema_registry.avro import AvroSerializer
-from confluent_kafka.serialization import (
-    MessageField,
-    SerializationContext,
-    StringSerializer,
-)
 
 
 default_args = {"owner": "batman", "retries": 5, "retry_delay": timedelta(minutes=1)}
@@ -29,7 +21,7 @@ dag = DAG(
 )
 
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
-BUCKET_NAME = "weather-archive"
+BUCKET_NAME = os.getenv("MINIO_BUCKET", "weather-bucket")
 TOPIC = os.getenv("KAFKA_TOPIC")
 
 DB_CONFIG = {
@@ -115,62 +107,30 @@ def delivery_report(err, msg):
         print(f"✅ Delivered to {msg.topic()} [Partition: {msg.partition()}]")
 
 
-def weather_to_dict(weather_data, ctx):
-    return weather_data
-
-
 def stream_to_kafka(ti):
     producer_conf = {
         "bootstrap.servers": "kafka:29092",
     }
-
     producer = Producer(producer_conf)
 
-    BASE_DIR = os.path.dirname(__file__)
-    with open(os.path.join(BASE_DIR, "weather_res.avsc"), "r") as f:
-        schema_str = f.read()
-
-    schema_registry_conf = {"url": "http://schema-registry:8081"}
-    schema_registry_client = SchemaRegistryClient(schema_registry_conf)
-
-    avro_serializer = AvroSerializer(
-        schema_registry_client,
-        schema_str,
-        weather_to_dict,
-    )
-
-    string_serializer = StringSerializer("utf-8")
-
     object_keys = ti.xcom_pull(task_ids="fetch_weather_to_minio")
-
     if not object_keys:
         raise ValueError("No object keys received from previous task")
 
     hook = S3Hook(aws_conn_id="minio_conn")
-
     try:
         for key in object_keys:
             data_str = hook.read_key(key=key, bucket_name=BUCKET_NAME)
             weather_data = json.loads(data_str)
-
             if not weather_data:
                 continue
-
             producer.produce(
                 topic=TOPIC,
-                key=string_serializer(
-                    weather_data["city"],
-                    SerializationContext(TOPIC, MessageField.KEY),
-                ),
-                value=avro_serializer(
-                    weather_data,
-                    SerializationContext(TOPIC, MessageField.VALUE),
-                ),
+                key=weather_data["city"].encode("utf-8"),
+                value=json.dumps(weather_data).encode("utf-8"),
                 on_delivery=delivery_report,
             )
-
         producer.flush()
-
     except Exception as e:
         print(f"❌ Error in Kafka streaming: {e}")
         raise
