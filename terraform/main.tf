@@ -16,7 +16,7 @@ provider "minio" {
 }
 
 resource "minio_s3_bucket" "weather_data" {
-  bucket        = "weather-archive"
+  bucket        = "weather-bucket"
   acl           = "private"
   force_destroy = true
 }
