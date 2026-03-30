@@ -19,7 +19,20 @@
           { "name": "time", "type": "string" },
           { "name": "interval", "type": "string" },
           { "name": "temperature_2m", "type": "string" },
-          { "name": "wind_speed_10m", "type": "string" }
+          { "name": "apparent_temperature", "type": "string" },
+          { "name": "relative_humidity_2m", "type": "string" },
+          { "name": "is_day", "type": "string" },
+          { "name": "precipitation", "type": "string" },
+          { "name": "rain", "type": "string" },
+          { "name": "showers", "type": "string" },
+          { "name": "snowfall", "type": "string" },
+          { "name": "weathercode", "type": "string" },
+          { "name": "cloud_cover", "type": "string" },
+          { "name": "pressure_msl", "type": "string" },
+          { "name": "surface_pressure", "type": "string" },
+          { "name": "wind_speed_10m", "type": "string" },
+          { "name": "wind_direction_10m", "type": "string" },
+          { "name": "wind_gusts_10m", "type": "string" }
         ]
       }
     },
@@ -32,7 +45,20 @@
           { "name": "time", "type": "string" },
           { "name": "interval", "type": "int" },
           { "name": "temperature_2m", "type": "double" },
-          { "name": "wind_speed_10m", "type": "double" }
+          { "name": "apparent_temperature", "type": "double" },
+          { "name": "relative_humidity_2m", "type": "double" },
+          { "name": "is_day", "type": "int" },
+          { "name": "precipitation", "type": "double" },
+          { "name": "rain", "type": "double" },
+          { "name": "showers", "type": "double" },
+          { "name": "snowfall", "type": "double" },
+          { "name": "weathercode", "type": "int" },
+          { "name": "cloud_cover", "type": "int" },
+          { "name": "pressure_msl", "type": "double" },
+          { "name": "surface_pressure", "type": "double" },
+          { "name": "wind_speed_10m", "type": "double" },
+          { "name": "wind_direction_10m", "type": "int" },
+          { "name": "wind_gusts_10m", "type": "double" }
         ]
       }
     },
