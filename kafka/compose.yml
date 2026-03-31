@@ -2,8 +2,6 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.7.7
     container_name: kafka
-    env_file:
-      - .env.kafka
     restart: no
     networks:
       - weather-net
@@ -12,7 +10,7 @@ services:
       - "29092:29092"
     environment:
       KAFKA_NODE_ID: 1
-      CLUSTER_ID: ${KAFKA_CLUSTER_ID:-"kafka-cluster-id"}
+      CLUSTER_ID: "b4f4a9f5-4304-40a0-8c1d-e37353925dc9"
       KAFKA_PROCESS_ROLES: "broker,controller"
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
