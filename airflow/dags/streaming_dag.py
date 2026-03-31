@@ -22,14 +22,20 @@ dag = DAG(
 
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
 BUCKET_NAME = os.getenv("BUCKET_NAME", "weather-bucket")
-TOPIC = os.getenv("KAFKA_TOPIC")
+TOPIC = os.getenv("KAFKA_TOPIC", "weather-topic")
+
+PG_HOST = os.getenv("POSTGRES_HOST", "postgres")
+PG_PORT = int(os.getenv("POSTGRES_PORT", 5432))
+PG_DB = os.getenv("POSTGRES_DB", "weather_db")
+PG_USER = os.getenv("POSTGRES_USER", "postgres")
+PG_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")
 
 DB_CONFIG = {
-    "host": "postgres",
-    "port": 5432,
-    "database": "weather_db",
-    "user": "postgres",
-    "password": "password",
+    "host": PG_HOST,
+    "port": PG_PORT,
+    "database": PG_DB,
+    "user": PG_USER,
+    "password": PG_PASSWORD,
 }
 
 

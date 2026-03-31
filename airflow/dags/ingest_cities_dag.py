@@ -1,3 +1,4 @@
+import os
 import requests
 import psycopg2
 import pandas as pd
@@ -17,15 +18,21 @@ dag = DAG(
     catchup=False,
 )
 
+PG_HOST = os.getenv("POSTGRES_HOST", "postgres")
+PG_PORT = int(os.getenv("POSTGRES_PORT", 5432))
+PG_DB = os.getenv("POSTGRES_DB", "weather_db")
+PG_USER = os.getenv("POSTGRES_USER", "postgres")
+PG_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")
+
 CSV_URL = "https://simplemaps.com/static/data/country-cities/es/es.csv"
 CSV_FILE = "/tmp/es.csv"
 
 DB_CONFIG = {
-    "host": "postgres",
-    "port": 5432,
-    "database": "weather_db",
-    "user": "postgres",
-    "password": "password",
+    "host": PG_HOST,
+    "port": PG_PORT,
+    "database": PG_DB,
+    "user": PG_USER,
+    "password": PG_PASSWORD,
 }
 
 
