@@ -61,6 +61,20 @@ docker compose up -d
 | MinIO Console | 9001 | http://localhost:9001 |
 | Metabase      | 3000 | http://localhost:3000 |
 
+## Default Credentials
+
+| Service    | Username | Password |
+| ---------- | -------- | -------- |
+| Airflow    | admin    | -        |
+| MinIO      | mioadmin | mioadmin |
+| PostgreSQL | postgres | password |
+
+To get the Airflow admin password, you can run:
+
+```bash
+docker exec airflow cat simple_auth_manager_passwords.json.generated
+```
+
 #### 3. Create the MinIO bucket for storing weather data:
 
 ```bash
@@ -74,41 +88,27 @@ just apply
 
 To enable Airflow to communicate with MinIO instance, follow these steps:
 
-- Navigate to your Airflow web UI (typically `http://localhost:8080`).
-- In the side menu, go to **Admin** -> **Connections**.
-- Click the **+ (plus)** icon to add a new connection.
-- Fill in the following details:
-  - **Connection Id:** `minio_conn`
-  - **Connection Type:** `Amazon Web Services`
-  - AWS Access Key ID: `mioadmin`
-  - AWS Secret Access Key: `mioadmin`
-  - **Extra Fields JSON:** add `{ "endpoint_url": "http://minio:9000" }`
-  - **Save** the connection.
+1. Navigate to your Airflow web UI (typically `http://localhost:8080`).
+2. In the side menu, go to **Admin** -> **Connections**.
+3. Click the **+ (plus)** icon to add a new connection.
+4. Fill in the following details:
+   - **Connection Id:** `minio_conn`
+   - **Connection Type:** `Amazon Web Services`
+   - AWS Access Key ID: `mioadmin`
+   - AWS Secret Access Key: `mioadmin`
+   - **Extra Fields JSON:** add `{ "endpoint_url": "http://minio:9000" }`
+   - **Save** the connection.
 
 #### 5. Start the Airflow DAGs:
 
-From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to enable the `ingest_cities_dag` first and
-then `streaming_dag`. This will start the data ingestion and streaming processes.
+From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to enable the `ingest_cities_dag` first and when it finishes successfully enable
+`streaming_dag`. This will start the data ingestion and streaming processes.
 
 #### 6. Visualize Data in Metabase:
 
 - Access the Metabase UI at `http://localhost:3000`.
-- Follow the setup instructions to connect to the PostgreSQL database (host: `postgres`, port: `5432`, username: `postgres`, password: `password`).
+- Follow the setup instructions to connect to the PostgreSQL database (host: `postgres`, port: `5432`).
 - Create a new dashboard and add questions to visualize the weather data stored in PostgreSQL.
-
-## Default Credentials
-
-| Service    | Username | Password |
-| ---------- | -------- | -------- |
-| Airflow    | admin    | -        |
-| MinIO      | mioadmin | mioadmin |
-| PostgreSQL | airflow  | airflow  |
-
-To get the Airflow admin password, you can run:
-
-```bash
-docker exec airflow cat simple_auth_manager_passwords.json.generated
-```
 
 ## Project Structure
 
