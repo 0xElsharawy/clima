@@ -3,7 +3,7 @@ services:
     build: .
     container_name: airflow
     env_file:
-      - ../.env
+      - .env.airflow
     restart: no
     networks:
       - weather-net
@@ -12,8 +12,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://airflow:airflow@postgres/airflow"
       AIRFLOW__CORE__FERNET_KEY: ""
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW_CORE_ENABLE_XCOM_PICKLING: "true"
