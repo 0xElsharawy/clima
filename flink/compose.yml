@@ -1,10 +1,10 @@
 services:
-  flink-jobmanager:
+  jobmanager:
     build:
       context: .
       dockerfile: Dockerfile
     image: weather-pyflink
-    container_name: flink-jobmanager
+    container_name: jobmanager
     env_file:
       - ../.env
     networks:
@@ -22,12 +22,12 @@ services:
     environment:
       KAFKA_TOPIC: ${KAFKA_TOPIC:-weather_raw}
       FLINK_PROPERTIES: |
-        jobmanager.rpc.address:jobmanager
+        jobmanager.rpc.address: jobmanager
         jobmanager.memory.process.size: 1600m
 
-  flink-taskmanager:
+  taskmanager:
     image: weather-pyflink
-    container_name: flink-taskmanager
+    container_name: taskmanager
     networks:
       - weather-net
     restart: no
@@ -36,14 +36,43 @@ services:
       - "6121"
       - "6122"
     depends_on:
-      - flink-jobmanager
+      - jobmanager
     command: ["taskmanager", "--taskmanager.registration.timeout", "300s"]
     environment:
       FLINK_PROPERTIES: |
-        jobmanager.rpc.address:jobmanager
+        jobmanager.rpc.address: jobmanager
         taskmanager.memory.process.size: 1728m
         taskmanager.numberOfTaskSlots: 15
         parallelism.default: 3
     volumes:
       - ./:/opt/flink/usrlib
       - ./src/:/opt/src
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://jobmanager:8081/taskmanagers"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  job-submitter:
+    image: weather-pyflink
+    container_name: job-submitter
+    networks:
+      - weather-net
+    pull_policy: never
+    depends_on:
+      taskmanager:
+        condition: service_healthy
+    command:
+      [
+        "bash",
+        "-c",
+        "./bin/flink run -m jobmanager:8081 -py /opt/src/consumer_job.py --pyFiles /opt/src -d",
+      ]
+    volumes:
+      - ./src/:/opt/src
+      - ./flink-config.yaml:/opt/flink/conf/config.yaml
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        rest.address: jobmanager
+        rest.port: 8081
