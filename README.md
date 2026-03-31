@@ -37,7 +37,7 @@ and provides visualization through Metabase dashboards. Built entirely with Dock
 
 ```bash
 git clone <repository-url>
-cd real-time-weather-pipeline
+cd realtime-weather-pipeline
 ```
 
 2. Start the services using `just`:
@@ -76,16 +76,27 @@ just apply
 
 To enable Airflow to communicate with MinIO instance, follow these steps:
 
-1.  Navigate to your Airflow web UI (typically `http://localhost:8080`).
-2.  In the side menu, go to **Admin** -> **Connections**.
-3.  Click the **+ (plus)** icon to add a new connection.
-4.  Fill in the following details:
-    - **Connection Id:** `minio_conn`
-    - **Connection Type:** `Amazon Web Services`
-    - AWS Access Key ID: `mioadmin`
-    - AWS Secret Access Key: `mioadmin`
-    - **Extra Fields JSON:** add `{ "endpoint_url": "http://minio:9000" }`
-    - **Save** the connection.
+    1.  Navigate to your Airflow web UI (typically `http://localhost:8080`).
+    2.  In the side menu, go to **Admin** -> **Connections**.
+    3.  Click the **+ (plus)** icon to add a new connection.
+    4.  Fill in the following details:
+        - **Connection Id:** `minio_conn`
+        - **Connection Type:** `Amazon Web Services`
+        - AWS Access Key ID: `mioadmin`
+        - AWS Secret Access Key: `mioadmin`
+        - **Extra Fields JSON:** add `{ "endpoint_url": "http://minio:9000" }`
+        - **Save** the connection.
+
+5. Start the Airflow DAGs:
+
+From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to enable the `ingest_cities_dag` first and
+then `streaming_dag`. This will start the data ingestion and streaming processes.
+
+6. Visualize Data in Metabase:
+
+- Access the Metabase UI at `http://localhost:3000`.
+- Follow the setup instructions to connect to the PostgreSQL database (host: `postgres`, port: `5432`, username: `postgres`, password: `password`).
+- Create a new dashboard and add questions to visualize the weather data stored in PostgreSQL.
 
 ## Default Credentials
 
@@ -169,14 +180,14 @@ just down-all
 
 ## Troubleshooting
 
+- Monitor kafka using the Kafka UI at `http://localhost:8083` to check if messages are being produced to the `weather-topic`.
+- Monitor Flink jobs using the Flink UI at `http://localhost:8082` to check if the consumer job is running and processing messages.
 - If you encounter issues with a specific service, you can check the logs using:
 
 ```bash
 # example for airflow
 just logs airflow
-
 # example for flink
 just logs flink
-
 # and so on for other services...
 ```
