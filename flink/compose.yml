@@ -6,7 +6,7 @@ services:
     image: weather-pyflink
     container_name: jobmanager
     env_file:
-      - ../.env
+      - .env.flink
     networks:
       - weather-net
     restart: no
