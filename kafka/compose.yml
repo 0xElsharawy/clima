@@ -3,7 +3,7 @@ services:
     image: confluentinc/cp-kafka:7.7.7
     container_name: kafka
     env_file:
-      - ../.env
+      - .env.kafka
     restart: no
     networks:
       - weather-net
