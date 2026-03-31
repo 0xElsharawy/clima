@@ -22,12 +22,11 @@ and provides visualization through Metabase dashboards. Built entirely with Dock
 
 ## Pipeline Flow
 
-1. **Airflow DAGs**:
-   - fetches cities information from `simplemaps.com` and ingests it into PostgreSQL
-   - fetches weather data for the cities from Open-Meteo API every 15 minutes
-2. Raw JSON is stored in **MinIO** (weather-bucket, landing/ prefix)
-3. Data is produced to **Kafka** (weather-topic)
-4. Flink consume, transform and ingest the data into PostgreSQL
+1. **Cities Ingestion** - Airflow DAG downloads Spanish cities data from simplemaps.com and stores it in PostgreSQL
+2. **Weather Fetching** - Airflow DAG queries Open-Meteo API for each city and saves raw JSON to MinIO bucket
+3. **Kafka Streaming** - Weather data is read from MinIO and published to `weather-topic` Kafka topic
+4. **Stream Processing** - Flink consumer reads from Kafka, transforms the data, and writes to PostgreSQL `weather_readings` table
+5. **Visualization** - Metabase connects to PostgreSQL for analytics dashboards
 
 ## Quick Start
 
@@ -167,10 +166,9 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
 
 ## Clean Up
 
-To Clean and remove all services and volumes just run:
+To Clean and remove all containers, networks and volumes just run:
 
 ```bash
-# this will remove all containers, networks, and volumes created by docker compose
 just down-all
 ```
 
@@ -183,7 +181,7 @@ just down-all
 ```bash
 # example for airflow
 just logs airflow
-# example for flink
-just logs flink
+# example for kafka
+just logs kafka
 # and so on for other services...
 ```
