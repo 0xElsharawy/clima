@@ -16,7 +16,7 @@ dag = DAG(
     default_args=default_args,
     description="A DAG for streaming to kafka topic and storing API response in MinIO bucket",
     start_date=datetime(2025, 1, 1),
-    schedule="@daily",
+    schedule="*/15 * * * *",
     catchup=False,
 )
 
