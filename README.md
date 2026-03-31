@@ -1,6 +1,9 @@
 # Real-Time Weather Pipeline
 
-A real-time weather data pipeline that fetches weather data from Open-Meteo API, stores raw data in MinIO, and streams through Kafka for downstream processing.
+A real-time weather data pipeline that demonstrates modern data engineering best practices by orchestrating weather data collection from the Open-Meteo API,
+persisting raw data to object storage, streaming through Apache Kafka, and processing with Apache Flink into PostgreSQL for analytics.
+The pipeline leverages Apache Airflow for workflow orchestration, includes infrastructure-as-code with Terraform,
+and provides visualization through Metabase dashboards. Built entirely with Docker Compose for easy local development and deployment.
 
 ## Architecture
 
@@ -50,17 +53,7 @@ docker compose up -d
 > [!NOTE]
 > I will be using `just` for all commands in this README, but you can achieve the same results by looking in `justfile` to see the equivalent commands.
 
-### Useful Commands
-
-```bash
-just ps        # Check service status
-just logs <service>  # View logs (airflow, kafka, flink, etc.)
-just shell <service> # Open shell in container
-just down      # Stop all services
-just rebuild   # Rebuild and restart
-```
-
-## Services & Ports
+## Web UIs
 
 | Service       | Port | URL                   |
 | ------------- | ---- | --------------------- |
@@ -70,7 +63,16 @@ just rebuild   # Rebuild and restart
 | MinIO Console | 9001 | http://localhost:9001 |
 | Metabase      | 3000 | http://localhost:3000 |
 
-### MinIO Setup for Airflow
+3. Create the MinIO bucket for storing weather data:
+
+```bash
+# initialize terraform
+just init
+# create the bucket
+just apply
+```
+
+4. MinIO Setup for Airflow
 
 To enable Airflow to communicate with MinIO instance, follow these steps:
 
@@ -80,8 +82,8 @@ To enable Airflow to communicate with MinIO instance, follow these steps:
 4.  Fill in the following details:
     - **Connection Id:** `minio_conn`
     - **Connection Type:** `Amazon Web Services`
-    - Access Key: `mioadmin`
-    - Secret Key: `mioadmin`
+    - AWS Access Key ID: `mioadmin`
+    - AWS Secret Access Key: `mioadmin`
     - **Extra Fields JSON:** add `{ "endpoint_url": "http://minio:9000" }`
     - **Save** the connection.
 
@@ -103,40 +105,78 @@ docker exec airflow cat simple_auth_manager_passwords.json.generated
 ## Project Structure
 
 ```
-├── airflow/           # Airflow DAGs and config
-│   └── dags/
-│       ├── streaming_dag.py   # Main pipeline DAG
-│       └── cities.json        # 30 Spanish cities
-├── kafka/             # Kafka configuration
-├── minio/             # Object storage
-├── postgres/          # Metadata storage
-└── terraform/         # Infrastructure as code
+├── assets/                     # Static assets
+│   └── pipeline.png            # Architecture diagram image
+├── airflow/                    # Airflow orchestration
+│   ├── .env.airflow            # Environment variables for Airflow
+│   ├── compose.yml             # Docker compose for Airflow services
+│   ├── Dockerfile              # Custom Airflow image build
+│   ├── requirements.txt        # Python dependencies for Airflow
+│   └── dags/                   # Airflow DAG definitions
+│       ├── ingest_cities_dag.py  # DAG for ingesting city data into PostgreSQL
+│       └── streaming_dag.py      # DAG for fetching weather data and sending to Kafka
+├── flink/                      # Apache Flink stream processing
+│   ├── .env.flink              # Environment variables for Flink
+│   ├── .python-version         # Python version specification
+│   ├── compose.yml             # Docker compose for Flink services
+│   ├── Dockerfile              # Custom Flink image build
+│   ├── flink-config.yaml       # Flink configuration
+│   ├── producer.py             # Kafka producer for testing
+│   ├── pyproject.toml          # Python project dependencies
+│   ├── pyproject.flink.toml    # Flink-specific dependencies
+│   ├── uv.lock                 # Locked dependency versions
+│   ├── src/                    # Flink source code
+│   │   └── consumer_job.py     # Kafka consumer that processes weather data
+│   └── .venv/                  # Virtual environment
+├── kafka/                      # Apache Kafka message broker
+│   └── compose.yml             # Docker compose for Kafka services
+├── minio/                      # MinIO object storage (S3-compatible)
+│   ├── .env.minio              # Environment variables for MinIO
+│   └── compose.yml             # Docker compose for MinIO services
+├── postgres/                   # PostgreSQL database
+│   ├── compose.yml             # Docker compose for PostgreSQL
+│   ├── init-db/                # Database initialization scripts
+│   │   └── weather-init.sql    # Weather data tables schema
+│   └── metadata-init/          # Metadata initialization scripts
+│       ├── airflow-init.sql    # Airflow metadata tables
+│       └── metabase-init.sql   # Metabase configuration
+├── metabase/                   # Metabase BI/visualization tool
+│   └── compose.yml             # Docker compose for Metabase
+├── terraform/                  # Infrastructure as Code
+│   ├── main.tf                 # Terraform configuration for MinIO bucket
+│   └── .terraform.lock.hcl     # Terraform lock file
+├── justfile                    # Command runner shortcuts (alternative to Make)
+└── compose.yml                 # Main Docker compose file for all services
 ```
 
 ## Pipeline Flow
 
-1. **Airflow DAG** fetches weather data from Open-Meteo API for configured cities
-2. Raw JSON is stored in **MinIO** (weather-archive bucket, landing/ prefix)
-3. Data is serialized and produced to **Kafka** (weather_raw topic)
-4. **Kafka** streams data for downstream consumers
+1. **Airflow DAGs**:
+   - fetches cities information from `simplemaps.com` and ingests it into PostgreSQL
+   - fetches weather data for the cities from Open-Meteo API every 15 minutes
+2. Raw JSON is stored in **MinIO** (weather-bucket, landing/ prefix)
+3. Data is produced to **Kafka** (weather-topic)
+4. Flink consume, transform and ingest the data into PostgreSQL
 
-## Terraform (MinIO)
+## Clean Up
 
-```bash
-just init    # Initialize terraform
-just apply   # Create MinIO bucket
-just destroy # Remove resources
-```
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and configure as needed:
+To Clean and remove all services and volumes just run:
 
 ```bash
-cp .env.example .env
+# this will remove all containers, networks, and volumes created by docker compose
+just down-all
 ```
 
-Key variables:
+## Troubleshooting
 
-- `KAFKA_TOPIC` - Kafka topic name
-- `MINIO_BUCKET` - MinIO bucket name
+- If you encounter issues with a specific service, you can check the logs using:
+
+```bash
+# example for airflow
+just logs airflow
+
+# example for flink
+just logs flink
+
+# and so on for other services...
+```
