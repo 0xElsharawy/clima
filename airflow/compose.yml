@@ -23,18 +23,3 @@ services:
     ports:
       - "8080:8080"
     command: standalone
-
-  docker-proxy:
-    image: tecnativa/docker-socket-proxy:v0.4.2
-    container_name: docker-proxy
-    restart: no
-    networks:
-      - weather-net
-    environment:
-      CONTAINERS: 1
-      NETWORKS: 1
-      IMAGES: 1
-      AUTH: 1
-      POST: 1
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
