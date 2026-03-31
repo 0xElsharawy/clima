@@ -21,7 +21,7 @@ dag = DAG(
 )
 
 BASE_URL = "https://api.open-meteo.com/v1/forecast"
-BUCKET_NAME = os.getenv("MINIO_BUCKET", "weather-bucket")
+BUCKET_NAME = os.getenv("BUCKET_NAME", "weather-bucket")
 TOPIC = os.getenv("KAFKA_TOPIC")
 
 DB_CONFIG = {
@@ -47,7 +47,7 @@ def fetch_weather_to_minio(**kwargs):
     conn.close()
 
     hook = S3Hook(aws_conn_id="minio_conn")
-    if hook.check_for_bucket(bucket_name="weather-archive"):
+    if hook.check_for_bucket(bucket_name=BUCKET_NAME):
         print("Successfully connected to MinIO!")
 
     keys = []
