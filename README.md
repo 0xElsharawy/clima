@@ -20,6 +20,15 @@ and provides visualization through Metabase dashboards. Built entirely with Dock
 - **Metabase** - BI tool for visualizing weather data dashboards
 - **Docker & Docker Compose** - Containerization for reproducible and portable deployments
 
+## Pipeline Flow
+
+1. **Airflow DAGs**:
+   - fetches cities information from `simplemaps.com` and ingests it into PostgreSQL
+   - fetches weather data for the cities from Open-Meteo API every 15 minutes
+2. Raw JSON is stored in **MinIO** (weather-bucket, landing/ prefix)
+3. Data is produced to **Kafka** (weather-topic)
+4. Flink consume, transform and ingest the data into PostgreSQL
+
 ## Quick Start
 
 ### Prerequisites
@@ -117,7 +126,7 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
 │   └── pipeline.png            # Architecture diagram image
 ├── airflow/                    # Airflow orchestration
 │   ├── .env.airflow            # Environment variables for Airflow
-│   ├── compose.yml             # Docker compose for Airflow services
+│   ├── compose.yml             # Docker compose for Airflow service
 │   ├── Dockerfile              # Custom Airflow image build
 │   ├── requirements.txt        # Python dependencies for Airflow
 │   └── dags/                   # Airflow DAG definitions
@@ -133,14 +142,13 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
 │   ├── pyproject.toml          # Python project dependencies
 │   ├── pyproject.flink.toml    # Flink-specific dependencies
 │   ├── uv.lock                 # Locked dependency versions
-│   ├── src/                    # Flink source code
-│   │   └── consumer_job.py     # Kafka consumer that processes weather data
-│   └── .venv/                  # Virtual environment
+│   └── src/                    # Flink source code
+│       └── consumer_job.py     # Kafka consumer that processes weather data
 ├── kafka/                      # Apache Kafka message broker
 │   └── compose.yml             # Docker compose for Kafka services
 ├── minio/                      # MinIO object storage (S3-compatible)
 │   ├── .env.minio              # Environment variables for MinIO
-│   └── compose.yml             # Docker compose for MinIO services
+│   └── compose.yml             # Docker compose for MinIO service
 ├── postgres/                   # PostgreSQL database
 │   ├── compose.yml             # Docker compose for PostgreSQL
 │   ├── init-db/                # Database initialization scripts
@@ -156,15 +164,6 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
 ├── justfile                    # Command runner shortcuts (alternative to Make)
 └── compose.yml                 # Main Docker compose file for all services
 ```
-
-## Pipeline Flow
-
-1. **Airflow DAGs**:
-   - fetches cities information from `simplemaps.com` and ingests it into PostgreSQL
-   - fetches weather data for the cities from Open-Meteo API every 15 minutes
-2. Raw JSON is stored in **MinIO** (weather-bucket, landing/ prefix)
-3. Data is produced to **Kafka** (weather-topic)
-4. Flink consume, transform and ingest the data into PostgreSQL
 
 ## Clean Up
 
