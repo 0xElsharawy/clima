@@ -22,7 +22,7 @@ and provides visualization through Metabase dashboards. Built entirely with Dock
 
 ## Pipeline Flow
 
-1. **Cities Ingestion** - Airflow DAG downloads Spanish cities data from simplemaps.com and stores it in PostgreSQL
+1. **Cities Ingestion** - Airflow DAG downloads Spanish cities data from `simplemaps.com` and stores it in PostgreSQL
 2. **Weather Fetching** - Airflow DAG queries Open-Meteo API for each city and saves raw JSON to MinIO bucket
 3. **Kafka Streaming** - Weather data is read from MinIO and published to `weather-topic` Kafka topic
 4. **Stream Processing** - Flink consumer reads from Kafka, transforms the data, and writes to PostgreSQL `weather_readings` table
@@ -34,7 +34,7 @@ and provides visualization through Metabase dashboards. Built entirely with Dock
 
 - Git
 - Docker & Docker Compose
-- `just` command runner (A better `make`)
+- `just` command runner
 - Terraform
 
 ### Setup
