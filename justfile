@@ -48,11 +48,3 @@ apply:
 # Destroy terraform with auto-approve
 destroy:
     @cd {{terraform_dir}} && terraform destroy -auto-approve
-
-# Clear airflow xcom
-xcom:
-    @docker exec -i postgres psql -U airflow -d airflow -c "DELETE FROM xcom WHERE dag_id = 'streaming_dag';"
-
-# Get airflow username & password
-airflow-cred:
-    @docker exec airflow cat simple_auth_manager_passwords.json.generated
