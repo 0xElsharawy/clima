@@ -31,14 +31,14 @@ and provides visualization through Metabase dashboards. Built entirely with Dock
 
 ### Setup
 
-1. **Clone the repository and navigate to the project directory:**
+#### 1. Clone the repository and navigate to the project directory:
 
 ```bash
 git clone <repository-url>
 cd realtime-weather-pipeline
 ```
 
-2. **Start the services using `just`:**
+#### 2. Start the services using `just`:
 
 ```bash
 # Using just (recommended)
@@ -61,7 +61,7 @@ docker compose up -d
 | MinIO Console | 9001 | http://localhost:9001 |
 | Metabase      | 3000 | http://localhost:3000 |
 
-3. **Create the MinIO bucket for storing weather data:**
+#### 3. Create the MinIO bucket for storing weather data:
 
 ```bash
 # initialize terraform
@@ -70,7 +70,7 @@ just init
 just apply
 ```
 
-4. **MinIO Setup for Airflow**
+#### 4. Establish Airflow Connection to MinIO:
 
 To enable Airflow to communicate with MinIO instance, follow these steps:
 
@@ -85,12 +85,12 @@ To enable Airflow to communicate with MinIO instance, follow these steps:
   - **Extra Fields JSON:** add `{ "endpoint_url": "http://minio:9000" }`
   - **Save** the connection.
 
-5. **Start the Airflow DAGs:**
+#### 5. Start the Airflow DAGs:
 
 From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to enable the `ingest_cities_dag` first and
 then `streaming_dag`. This will start the data ingestion and streaming processes.
 
-6. **Visualize Data in Metabase:**
+#### 6. Visualize Data in Metabase:
 
 - Access the Metabase UI at `http://localhost:3000`.
 - Follow the setup instructions to connect to the PostgreSQL database (host: `postgres`, port: `5432`, username: `postgres`, password: `password`).
