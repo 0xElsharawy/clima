@@ -76,16 +76,16 @@ just apply
 
 To enable Airflow to communicate with MinIO instance, follow these steps:
 
-    1.  Navigate to your Airflow web UI (typically `http://localhost:8080`).
-    2.  In the side menu, go to **Admin** -> **Connections**.
-    3.  Click the **+ (plus)** icon to add a new connection.
-    4.  Fill in the following details:
-        - **Connection Id:** `minio_conn`
-        - **Connection Type:** `Amazon Web Services`
-        - AWS Access Key ID: `mioadmin`
-        - AWS Secret Access Key: `mioadmin`
-        - **Extra Fields JSON:** add `{ "endpoint_url": "http://minio:9000" }`
-        - **Save** the connection.
+- Navigate to your Airflow web UI (typically `http://localhost:8080`).
+- In the side menu, go to **Admin** -> **Connections**.
+- Click the **+ (plus)** icon to add a new connection.
+- Fill in the following details:
+  - **Connection Id:** `minio_conn`
+  - **Connection Type:** `Amazon Web Services`
+  - AWS Access Key ID: `mioadmin`
+  - AWS Secret Access Key: `mioadmin`
+  - **Extra Fields JSON:** add `{ "endpoint_url": "http://minio:9000" }`
+  - **Save** the connection.
 
 5. Start the Airflow DAGs:
 
