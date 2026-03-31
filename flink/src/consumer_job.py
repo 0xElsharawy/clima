@@ -20,36 +20,36 @@ def create_postgres_sink(t_env):
     table_name = "weather_readings"
     sink_ddl = f"""
         CREATE TABLE {table_name} (
-            city TEXT,
-            latitude DOUBLE PRECISION,
-            longitude DOUBLE PRECISION,
-            generationtime_ms DOUBLE PRECISION,
+            city STRING,
+            latitude DOUBLE,
+            longitude DOUBLE,
+            generationtime_ms DOUBLE,
             utc_offset_seconds INT,
-            timezone TEXT,
-            timezone_abbreviation TEXT,
-            elevation DOUBLE PRECISION,
+            timezone STRING,
+            timezone_abbreviation STRING,
+            elevation DOUBLE,
 
-            time TIMESTAMP,
+            event_time TIMESTAMP,
             interval_sec INT,
 
-            temperature_2m DOUBLE PRECISION,
-            apparent_temperature DOUBLE PRECISION,
-            relative_humidity_2m DOUBLE PRECISION,
+            temperature_2m DOUBLE,
+            apparent_temperature DOUBLE,
+            relative_humidity_2m DOUBLE,
             is_day INT,
-            precipitation DOUBLE PRECISION,
-            rain DOUBLE PRECISION,
-            showers DOUBLE PRECISION,
-            snowfall DOUBLE PRECISION,
+            precipitation DOUBLE,
+            rain DOUBLE,
+            showers DOUBLE,
+            snowfall DOUBLE,
             weathercode INT,
             cloud_cover INT,
-            pressure_msl DOUBLE PRECISION,
-            surface_pressure DOUBLE PRECISION,
-            wind_speed_10m DOUBLE PRECISION,
+            pressure_msl DOUBLE,
+            surface_pressure DOUBLE,
+            wind_speed_10m DOUBLE,
             wind_direction_10m INT,
-            wind_gusts_10m DOUBLE PRECISION,
+            wind_gusts_10m DOUBLE,
 
-            temperature_unit TEXT,
-            wind_speed_unit TEXT
+            temperature_unit STRING,
+            wind_speed_unit STRING
         ) WITH (
             'connector' = 'jdbc',
             'url' = 'jdbc:postgresql://{PG_HOST}:{PG_PORT}/{PG_DB}',
@@ -106,8 +106,8 @@ def create_kafka_source(t_env):
             'properties.bootstrap.servers' = '{KAFKA_BOOTSTRAP}',
             'properties.group.id' = 'weather_consumer_group',
             'scan.startup.mode' = 'earliest-offset',
-            'value.format' = 'avro-confluent',
-            'value.avro-confluent.schema-registry.url' = 'http://schema-registry:8081'
+            'properties.auto.offset.reset' = 'earliest',
+            'value.format' = 'json'
         )
     """
     t_env.execute_sql(source_ddl)
@@ -137,7 +137,7 @@ def main():
                 timezone_abbreviation,
                 elevation,
 
-                TO_TIMESTAMP(`current`.`time`, 'yyyy-MM-dd''T''HH:mm') AS time,
+                TO_TIMESTAMP(`current`.`time`, 'yyyy-MM-dd''T''HH:mm') AS event_time,
                 `current`.`interval` AS interval_sec,
 
                 `current`.temperature_2m,
