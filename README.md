@@ -11,16 +11,14 @@ and provides visualization through Metabase dashboards. Built entirely with Dock
 
 ## Tech Stack
 
-| Component              | Technology              |
-| ---------------------- | ----------------------- |
-| Orchestration          | Apache Airflow          |
-| Message Broker         | Apache Kafka            |
-| Stream Processing      | Apache Flink            |
-| Object Storage         | MinIO (S3-compatible)   |
-| Metadata DB & OLAP     | PostgreSQL              |
-| Infrastructure as Code | Terraform               |
-| Visualization          | Metabase                |
-| Containerization       | Docker & Docker Compose |
+- **Apache Airflow** - Workflow orchestration platform for scheduling and monitoring data pipelines
+- **Apache Kafka** - Distributed event streaming platform for real-time data ingestion and processing
+- **Apache Flink** - Stream processing framework for transforming and analyzing streaming data
+- **MinIO** - S3-compatible object storage for persisting raw weather data
+- **PostgreSQL** - Relational database for storing weather readings and metadata
+- **Terraform** - Infrastructure as Code tool for provisioning MinIO buckets
+- **Metabase** - BI tool for visualizing weather data dashboards
+- **Docker & Docker Compose** - Containerization for reproducible and portable deployments
 
 ## Quick Start
 
@@ -58,7 +56,7 @@ docker compose up -d
 | Service       | Port | URL                   |
 | ------------- | ---- | --------------------- |
 | Airflow UI    | 8080 | http://localhost:8080 |
-| Flink UI      | 5432 | http://localhost:8082 |
+| Flink UI      | 8082 | http://localhost:8082 |
 | Kafka UI      | 8083 | http://localhost:8083 |
 | MinIO Console | 9001 | http://localhost:9001 |
 | Metabase      | 3000 | http://localhost:3000 |
