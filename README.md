@@ -115,7 +115,7 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
 #### 6. Visualize Data in Metabase:
 
 - Access the Metabase UI at `http://localhost:3000`.
-- Follow the setup instructions to connect to the PostgreSQL database (host: `postgres`, port: `5432`).
+- Follow the setup instructions to connect to the PostgreSQL database (host: `postgres`, port: `5432`, database: `weather_db`).
 - Create a new dashboard and add questions to visualize the weather data stored in PostgreSQL.
 
 ## Project Structure
