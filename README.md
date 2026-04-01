@@ -126,12 +126,13 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
 
   **This is an example dashboard you can find the SQL questions in `metabase/queries` directory.**
 
-![Pipeline Diagram](assets/metabase-dashboard.png)
+![Pipeline Diagram](assets/dashboard.png)
 
 ## Project Structure
 
 ```
 ├── assets/                     # Static assets
+│   ├── dashboard.png           # Metabase example dashboard image
 │   └── pipeline.png            # Architecture diagram image
 ├── airflow/                    # Airflow orchestration
 │   ├── .env.airflow            # Environment variables for Airflow
