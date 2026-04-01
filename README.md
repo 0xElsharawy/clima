@@ -71,11 +71,10 @@ docker compose up -d
 
 ## Default Credentials
 
-| Service    | Username | Password |
-| ---------- | -------- | -------- |
-| Airflow    | admin    | -        |
-| MinIO      | mioadmin | mioadmin |
-| PostgreSQL | postgres | password |
+| Service | Username | Password |
+| ------- | -------- | -------- |
+| Airflow | admin    | -        |
+| MinIO   | mioadmin | mioadmin |
 
 To get the Airflow admin password, you can run:
 
@@ -115,7 +114,16 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
 #### 6. Visualize Data in Metabase:
 
 - Access the Metabase UI at `http://localhost:3000`.
-- Follow the setup instructions to connect to the PostgreSQL database (host: `postgres`, port: `5432`, database: `weather_db`).
+- Follow the setup instructions to connect to the PostgreSQL database.
+
+| Name     | Credential |
+| -------- | ---------- |
+| host     | postgres   |
+| username | postgres   |
+| password | password   |
+| port     | 5432       |
+| database | weather_db |
+
 - Create a new dashboard and add questions to visualize the weather data stored in PostgreSQL.
 
 ## Project Structure
@@ -137,7 +145,6 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
 │   ├── compose.yml             # Docker compose for Flink services
 │   ├── Dockerfile              # Custom Flink image build
 │   ├── flink-config.yaml       # Flink configuration
-│   ├── producer.py             # Kafka producer for testing
 │   ├── pyproject.toml          # Python project dependencies
 │   ├── pyproject.flink.toml    # Flink-specific dependencies
 │   ├── uv.lock                 # Locked dependency versions
