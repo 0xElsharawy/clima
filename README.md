@@ -37,7 +37,7 @@ and provides visualization through Metabase dashboards. Built entirely with Dock
 - `just` command runner
 - Terraform
 
-### Setup
+### Setup (follow these steps in order)
 
 #### 1. Clone the repository and navigate to the project directory:
 
@@ -46,7 +46,7 @@ git clone <repository-url>
 cd realtime-weather-pipeline
 ```
 
-#### 2. Start the services using `just`:
+#### 2. Start the services:
 
 ```bash
 # Using just (recommended)
@@ -183,6 +183,12 @@ just down-all
 
 - Monitor kafka using the Kafka UI at `http://localhost:8083` to check if messages are being produced to the `weather-topic`.
 - Monitor Flink jobs using the Flink UI at `http://localhost:8082` to check if the consumer job is running and processing messages.
+- Ensure that all services are up and running by checking the Docker Compose status:
+
+```bash
+just ps
+```
+
 - If you encounter issues with a specific service, you can check the logs using:
 
 ```bash
@@ -191,4 +197,11 @@ just logs airflow
 # example for kafka
 just logs kafka
 # and so on for other services...
+```
+
+- Enter shell of a specific service to debug further:
+
+```bash
+# example for airflow
+just shell airflow
 ```
