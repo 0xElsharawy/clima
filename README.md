@@ -124,7 +124,7 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
     - Password: `password`
 - Create a new dashboard and add questions to visualize the weather data stored in PostgreSQL.
 
-  **This is an example dashboard you can find the SQL questions in** `metabase/queries directory`.
+  **This is an example dashboard you can find the SQL questions in `metabase/queries` directory.**
 
 ![Pipeline Diagram](assets/metabase-dashboard.png)
 
