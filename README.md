@@ -101,8 +101,8 @@ To enable Airflow to communicate with MinIO instance, follow these steps:
 4. Fill in the following details:
    - **Connection Id:** `minio_conn`
    - **Connection Type:** `Amazon Web Services`
-   - AWS Access Key ID: `mioadmin`
-   - AWS Secret Access Key: `mioadmin`
+   - **AWS Access Key ID:** `mioadmin`
+   - **AWS Secret Access Key:** `mioadmin`
    - **Extra Fields JSON:** add `{ "endpoint_url": "http://minio:9000" }`
    - **Save** the connection.
 
@@ -115,15 +115,12 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
 
 - Access the Metabase UI at `http://localhost:3000`.
 - Follow the setup instructions to connect to the PostgreSQL database.
-
-| Name     | Credential |
-| -------- | ---------- |
-| host     | postgres   |
-| username | postgres   |
-| password | password   |
-| port     | 5432       |
-| database | weather_db |
-
+  - PostgreSQL connection details:
+    - Host: `postgres`
+    - Port: `5432`
+    - Database: `weather_db`
+    - Username: `postgres`
+    - Password: `password`
 - Create a new dashboard and add questions to visualize the weather data stored in PostgreSQL.
 
 ## Project Structure
