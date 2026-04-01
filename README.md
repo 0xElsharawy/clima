@@ -76,11 +76,12 @@ docker compose up -d
 | Airflow | admin    | -        |
 | MinIO   | mioadmin | mioadmin |
 
-To get the Airflow admin password, you can run:
-
-```bash
-docker exec airflow cat simple_auth_manager_passwords.json.generated
-```
+> [!IMPORTANT]
+> To get the Airflow admin password, you can run:
+>
+> ```bash
+> docker exec airflow cat simple_auth_manager_passwords.json.generated
+> ```
 
 #### 3. Create the MinIO bucket for storing weather data:
 
