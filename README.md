@@ -166,6 +166,7 @@ From the Airflow UI, navigate to the **DAGs** tab, and toggle the switches to en
 │       ├── airflow-init.sql    # Airflow metadata tables
 │       └── metabase-init.sql   # Metabase configuration
 ├── metabase/                   # Metabase BI/visualization tool
+│   ├── queries/                # Example SQL questions for visualizations
 │   └── compose.yml             # Docker compose for Metabase
 ├── terraform/                  # Infrastructure as Code
 │   ├── main.tf                 # Terraform configuration for MinIO bucket
