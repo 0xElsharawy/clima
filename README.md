@@ -1,6 +1,6 @@
-# Real-Time Weather Pipeline
+# Clima
 
-A real-time weather data pipeline that demonstrates modern data engineering best practices by orchestrating weather data collection from the Open-Meteo API,
+**Clima** (which in spanish means **Weather**) is a real-time weather data pipeline that demonstrates modern data engineering best practices by orchestrating weather data collection from the Open-Meteo API,
 persisting raw data to object storage, streaming through Apache Kafka, and processing with Apache Flink into PostgreSQL for analytics.
 The pipeline leverages Apache Airflow for workflow orchestration, includes infrastructure-as-code with Terraform,
 and provides visualization through Metabase dashboards. Built entirely with Docker Compose for easy local development and deployment.
