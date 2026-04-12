@@ -43,7 +43,7 @@ and provides visualization through Metabase dashboards. Built entirely with Dock
 
 ```bash
 git clone <repository-url>
-cd realtime-weather-pipeline
+cd clima
 ```
 
 #### 2. Start the services:
